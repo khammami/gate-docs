@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Or your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write # Required for OIDC token if using official GitHub Pages action, good to have for peaceiris action too
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Match your development Node.js version if possible
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci # Use 'ci' for cleaner installs in CI
+
+      - name: Build Next.js app
+        # The basePath from next.config.js will be used for links and assets
+        run: npm run build 
+        # The `output: 'export'` in next.config.js means `next build` will output to the `out` folder.
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          # user_name: 'github-actions[bot]' # Optional: Customize commit user
+          # user_email: 'github-actions[bot]@users.noreply.github.com' # Optional: Customize commit email
+          # cname: your.custom.domain.com # Optional: if you are using a custom domain
